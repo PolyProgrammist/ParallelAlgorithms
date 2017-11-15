@@ -14,15 +14,16 @@ namespace MyParallel
     {
         public string JustFunc(string x)
         {
-            byte[] hash = Encoding.ASCII.GetBytes(x);
-            MD5 md5 = new MD5CryptoServiceProvider();
-            byte[] hashenc = md5.ComputeHash(hash);
-            string result = "";
-            foreach (var b in hashenc)
-            {
-                result += b.ToString("x2");
+            using (MD5 md5 = new MD5CryptoServiceProvider()) { 
+                byte[] hash = Encoding.ASCII.GetBytes(x);
+                byte[] hashenc = md5.ComputeHash(hash);
+                string result = "";
+                foreach (var b in hashenc)
+                {
+                    result += b.ToString("x2");
+                }
+                return result;
             }
-            return result;
         }
 
         public string GetHash(string root)
@@ -41,7 +42,7 @@ namespace MyParallel
                     (index) => hashes[index + dirs.Length] = JustFunc(files[index]));
                 hashes.ForEach(h => sb.Append(h));                
             }
-            catch (Exception e)
+            catch
             {
             }
             return JustFunc(sb + JustFunc(root));
@@ -61,7 +62,7 @@ namespace MyParallel
                     sb.Append(JustFunc(file));
                 }
             }
-            catch (Exception e)
+            catch
             {
 
             }
