@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MyParallel
 {
-
     public enum nodeColor { BLACK, RED };
 
     public class Node<T> where T: IComparable
@@ -59,7 +59,7 @@ namespace MyParallel
         public Node<T> r(bool op) { return op ? left : right; }
     };
 
-    public class RBT<T> where T:IComparable
+    public class RBTSimple<T> : IUniqueContainer<T> where T:IComparable
     {
 
         Node<T> root = Node<T>.NIL;
@@ -253,19 +253,25 @@ namespace MyParallel
         }
 
 
-        public void insert(T x)
+        public void Add(T x)
         {
+            if (Contains(x))
+                return;
             insert(new Node<T>(x, Node<T>.NIL));
         }
-        public void erase(T x)
+        public void Remove(T x)
         {
             erase(treefind(root, x));
         }
-        public int getHeight()
+        public bool Contains(T x)
+        {
+            return treefind(root, x) != Node<T>.NIL;
+        }
+        public int GetHeight()
         {
             return h(root);
         }
-        public int getSize()
+        public int GetSize()
         {
             return size(root);
         }
@@ -276,37 +282,5 @@ namespace MyParallel
             a = b;
             b = temp;
         }
-    }
-
-    class Tester
-    {
-        void InsertAll(int[] a, RBT<int> r)
-        {
-            foreach (var i in a)
-                r.insert(i);
-        }
-
-        void EraseAll(int[] a, RBT<int> r)
-        {
-            foreach (var i in a)
-                r.erase(i);
-        }
-        public void tester()
-        {
-            const int n = 1000000;
-            Console.Write("size: ");
-            Console.WriteLine(n);
-            int[] a = new int[n];
-            Random rnd = new Random();
-            for (int i = 0; i < n; i++)
-                a[i] = rnd.Next();
-
-            RBT<int> r = new RBT<int>();
-            Program.CountTime(() => InsertAll(a, r), "RBT insert");
-            a = a.OrderBy(item => rnd.Next()).ToArray();
-            Program.CountTime(() => EraseAll(a, r), "RBT erase");
-
-        }
-    }
-    
+    } 
 }

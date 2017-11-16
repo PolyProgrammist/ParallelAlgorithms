@@ -11,9 +11,11 @@ namespace MyParallel
     {
         static void Main(string[] args)
         {
-            new Qsort().Test();
-            new DirectoryHash().Test();
-            new CountPrimesTo().Test();
+            new RBTTester().TestTime();
+            //new RBTTester().TestCorrectnessManually();
+           // new Qsort().Test();
+           // new DirectoryHash().Test();
+           // new CountPrimesTo().Test();
         }
 
         public static void CountTime(Action action, string name)
