@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading;
 
 namespace MyParallel
 {
@@ -11,11 +12,13 @@ namespace MyParallel
     {
         static void Main(string[] args)
         {
-            new RBTTester().TestTime();
+            Monitor.Enter(null);
+            // Console.WriteLine(5.CompareTo(6));
+            // new RBTTester().TestTime();
             //new RBTTester().TestCorrectnessManually();
-           // new Qsort().Test();
-           // new DirectoryHash().Test();
-           // new CountPrimesTo().Test();
+            // new Qsort().Test();
+            // new DirectoryHash().Test();
+            // new CountPrimesTo().Test();
         }
 
         public static void CountTime(Action action, string name)
