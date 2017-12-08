@@ -17,7 +17,7 @@ namespace MyParallel
             key = _key;
         }
 
-        public SNode<T> getc(bool l)
+        public SNode<T> child(bool l)
         {
             return l ? left : right;
         }
@@ -84,9 +84,7 @@ namespace MyParallel
             SNode<T> pred = null, curr = root;
             if (root == null)
             {
-                Monitor.Enter(root);
-                root = new SNode<T>(x);
-                Monitor.Exit(root);
+                return;
             }
             else
             {
@@ -111,7 +109,41 @@ namespace MyParallel
                         Monitor.Exit(pred);
                     }
                     if (curr == null)
-                        pred.assign(less, new SNode<T>(x));
+                        return;
+                    ;
+                    Monitor.Enter(curr.left);
+                    Monitor.Enter(curr.right);
+                    if (curr.left == null || curr.right == null)
+                        if (curr.left == null)
+                            pred = curr.left;
+                        else
+                            pred = curr.right;
+                    else
+                    {
+                        SNode<T> thepred = curr, thecur = curr.right;
+                        Monitor.Enter(thecur);
+                        Monitor.Enter(thepred);
+                        try
+                        {
+                            while (thecur.left != null)
+                            {
+                                Monitor.Exit(thepred);
+                                thepred = thecur;
+                                thecur = thecur.left;
+                                Monitor.Enter(thepred);
+                                Monitor.Enter(thecur);
+                            }
+                            pred.assign(less, thecur);
+                            thepred.left = null;
+                            thecur.left = curr.left;
+                        }
+                        finally
+                        {
+                            Monitor.Exit(thepred);
+                            Monitor.Exit(thecur);
+                        }
+                    }
+
                 }
                 finally
                 {
