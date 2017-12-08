@@ -35,6 +35,17 @@ namespace MyParallel
 
     class RBTTester
     {
+        public RBTTester()
+        {
+            rnd = new Random();
+        }
+
+        public RBTTester(int seed)
+        {
+            rnd = new Random(seed);
+        }
+
+        Random rnd;
         void InsertAll(int[] a, RBTSimple<int> r)
         {
             foreach (var i in a)
@@ -52,7 +63,6 @@ namespace MyParallel
             Console.Write("size: ");
             Console.WriteLine(n);
             int[] a = new int[n];
-            Random rnd = new Random();
             for (int i = 0; i < n; i++)
                 a[i] = rnd.Next();
 
@@ -67,13 +77,12 @@ namespace MyParallel
 
         public Tuple<RBTComand, int>[] GetComands(int operations, int initialSize, double insertProbability, double eraseProbability, double findProbabity, int maxNum = Int32.MaxValue)
         {
+
             const double probEps = 1e-5;
             if (Math.Abs(insertProbability + eraseProbability + findProbabity - 1) > probEps)
                 throw new ArgumentException("Probabilities broken");
             Console.WriteLine("Operations: " + operations);
             Console.WriteLine("Initial size: " + initialSize);
-
-            Random rnd = new Random();
 
             Tuple<RBTComand, int>[] comands = new Tuple<RBTComand, int>[operations + initialSize];
             for (int i = 0; i < initialSize; i++)
@@ -98,7 +107,7 @@ namespace MyParallel
 
         public void TestCorrectnessAuto()
         {
-            RBTSimple<int> r = new RBTSimple<int>();
+            BSTFineGrained<int> r = new BSTFineGrained<int>();
             SortedSet<int> s = new SortedSet<int>();
             var comands = GetSimpleComands();
             foreach (var cmd in comands)
@@ -131,22 +140,27 @@ namespace MyParallel
             r.print();
         }
 
+        private void DoOperation(IUniqueContainer<int> r, Tuple<RBTComand, int> cmd)
+        {
+            switch (cmd.Item1)
+            {
+                case RBTComand.INSERT:
+                    r.Add(cmd.Item2);
+                    break;
+                case RBTComand.ERASE:
+                    r.Remove(cmd.Item2);
+                    break;
+                case RBTComand.FIND:
+                    r.Contains(cmd.Item2);
+                    break;
+            }
+        }
+
         public void DoOperations(IUniqueContainer<int> r, Tuple<RBTComand, int>[] comands)
         {
             foreach (var cmd in comands)
             {
-                switch (cmd.Item1)
-                {
-                    case RBTComand.INSERT:
-                        r.Add(cmd.Item2);
-                        break;
-                    case RBTComand.ERASE:
-                        r.Remove(cmd.Item2);
-                        break;
-                    case RBTComand.FIND:
-                        r.Contains(cmd.Item2);
-                        break;
-                }
+                DoOperation(r, cmd);
             }
         }
 
@@ -155,6 +169,74 @@ namespace MyParallel
             var comands = GetSimpleComands(1000000);
             Program.CountTime(() => DoOperations(new BuiltInSet<int>(), comands), "BuiltInSet");
             Program.CountTime(() => DoOperations(new RBTSimple<int>(), comands), "RBTSimple");
+        }
+
+        public List<Tuple<RBTComand, int>[]> SplitToSublists(Tuple<RBTComand, int>[] source)
+        {
+            int n = 4;
+            return source
+                .Select((s, i) => new { Value = s, Index = i })
+                .GroupBy(x => x.Index / n)
+                .Select(grp => grp.Select(x => x.Value).ToArray())
+                .ToList();
+        }
+
+        private void CheckWithSS<T>(ConcurrentBuiltInSetRough<T> b, BSTFineGrained<T> a) where T: IComparable<T>
+        {
+            int s1 = b.ss.Count;
+            int s2 = a.sizelineartime();
+            bool correct = true;
+            if (s1 != s2)
+            {
+                correct = false;
+                Console.WriteLine("bad sizes");
+                Console.WriteLine(s1);
+                Console.WriteLine(s2);
+            }
+            foreach (T i in b.ss)
+            {
+                if (!a.Contains(i))
+                {
+                    Console.WriteLine("doesn't contain element " + i);
+
+                    correct = false;
+                }
+            }
+            if (correct)
+                Console.WriteLine("Correct test");
+        }
+
+        public void TestCorrectnessSync()
+        {
+            int to = 50000;
+            var comands = GetSimpleComands(to);
+            BSTFineGrained<int> a = new BSTFineGrained<int>();
+            ConcurrentBuiltInSetRough<int> b = new ConcurrentBuiltInSetRough<int>();
+            Parallel.ForEach(comands, t => DoOperation(b, t));
+            Parallel.ForEach(comands, t => DoOperation(a, t));
+            CheckWithSS(b, a);
+        }
+
+        public void TestAddEraseParallel()
+        {
+            int to = 50000;
+            var insertions = GetComands(to, 0, 1, 0, 0);
+            var deletioins = GetComands(to, 0, 0, 1, 0);
+            BSTFineGrained<int> a = new BSTFineGrained<int>();
+            Parallel.Invoke(()=>DoOperations(a, insertions), ()=>DoOperations(a, deletioins));
+        }
+
+
+        public void TestTimeSync()
+        {
+            int to = 500000;
+            var comands = GetSimpleComands(to);
+            var blocks = SplitToSublists(comands);
+            IUniqueContainer<int> a = new BSTFineGrained<int>();
+            IUniqueContainer<int> b = new ConcurrentBuiltInSetRough<int>();
+            Program.CountTime(() => Parallel.ForEach(comands, t => DoOperation(b, t)), "ConcurrentBuiltInSetRough");
+            Program.CountTime(() => Parallel.ForEach(comands, t => DoOperation(a, t)), "BSTFineGrained");
+            Program.CountTime(() => DoOperations(a, comands), "SecuentialBST");
         }
     }
 }
