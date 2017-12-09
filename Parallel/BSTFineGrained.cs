@@ -17,19 +17,19 @@ namespace MyParallel
             key = _key;
         }
 
-        public SNode<T> child(bool l)
+        public SNode<T> child(bool needInRight)
         {
-            return l ? left : right;
+            return needInRight ? left : right;
         }
-        public void assign(bool l, SNode<T> sn)
+        public void assign(bool needInRight, SNode<T> sn)
         {
-            if (l)
+            if (needInRight)
             {
-                left = sn;
+                right = sn;
             }
             else
             {
-                right = sn;
+                left = sn;
             }
         }
     }
@@ -39,38 +39,30 @@ namespace MyParallel
 
         public void Add(T x)
         {
-            Monitor.Enter(this);
-            myenter(root);
-            Monitor.Exit(this);
             SNode<T> pred = null, curr = root;
             if (root == null)
             {
-                Monitor.Enter(this);
                 root = new SNode<T>(x);
-                Monitor.Exit(this);
             }
             else
             {
                 myenter(curr);
                 try
                 {
-                    bool less = false;
+                    bool needInRight = false;
                     while (curr != null && curr.key.CompareTo(x) != 0)
                     {
-                        if (pred == null)
-                            less = curr.key.CompareTo(x) < 0;
-                        else
-                            less = pred.key.CompareTo(x) < 0;
+                        needInRight = curr.key.CompareTo(x) < 0;
                         myexit(pred);
                         pred = curr;
-                        if (less)
-                            curr = curr.left;
-                        else
+                        if (needInRight)
                             curr = curr.right;
+                        else
+                            curr = curr.left;
                         myenter(curr);
                     }
                     if (curr == null)
-                        pred.assign(less, new SNode<T>(x));
+                        pred.assign(pred.key.CompareTo(x) < 0, new SNode<T>(x));
                 }
                 finally
                 {
@@ -90,27 +82,21 @@ namespace MyParallel
             }
             else
             {
-                Monitor.Enter(this);
                 myenter(curr);
-                Monitor.Exit(this);
                 try
                 {
-                    bool less = false;
+                    bool needInRight = false;
                     while (curr != null && curr.key.CompareTo(x) != 0)
                     {
-                        if (pred == null)
-                            less = curr.key.CompareTo(x) < 0;
-                        else
-                            less = pred.key.CompareTo(x) < 0;
+                        needInRight = curr.key.CompareTo(x) < 0;
                         if (pred != null)
                             myexit(pred);
                         pred = curr;
-                        if (less)
-                            curr = curr.left;
-                        else
+                        if (needInRight)
                             curr = curr.right;
+                        else
+                            curr = curr.left;
                         myenter(curr);
-                        myexit(pred);
                     }
                     if (curr == null)
                         return;
@@ -122,15 +108,15 @@ namespace MyParallel
                             if (pred == null)
                                 root = curr.left;
                             else
-                                pred = curr.left;
+                                pred.assign(needInRight, curr.left);
                         else
                             if (pred == null)
                                 root = curr.right;
                             else
-                                pred = curr.right;
+                                pred.assign(needInRight, curr.right);
                     else
                     {
-                        SNode<T> thepred = curr, thecur = curr.right;
+                        SNode<T> thepred = null, thecur = curr.right;
                         myenter(thecur);
                         myenter(thepred);
                         try
@@ -140,12 +126,14 @@ namespace MyParallel
                                 myexit(thepred);
                                 thepred = thecur;
                                 thecur = thecur.left;
-                                myenter(thepred);
                                 myenter(thecur);
                             }
-                            pred.assign(less, thecur);
-                            thepred.left = null;
-                            thecur.left = curr.left;
+                            curr.key = thecur.key;
+                            if (thepred == null)
+                                curr.right = thecur.right;
+                            else
+                                thepred.left = thecur.right;
+                            int a = 5;
                         }
                         finally
                         {
@@ -164,6 +152,7 @@ namespace MyParallel
                         myexit(curr.left);
                         myexit(curr.right);
                     }
+                    myexit(root);
                 }
             }
         }
@@ -172,25 +161,20 @@ namespace MyParallel
         {
             bool was = false;
             SNode<T> pred = null, curr = root;
-            Monitor.Enter(this);
             myenter(curr);
-            Monitor.Exit(this);
             try
             {
-                bool less = false;
+                bool needInRight = false;
                 while (curr != null && curr.key.CompareTo(x) != 0)
                 {
-                    if (pred == null)
-                        less = curr.key.CompareTo(x) < 0;
-                    else
-                        less = pred.key.CompareTo(x) < 0;
+                    needInRight = curr.key.CompareTo(x) < 0;
                     if (pred != null)
                         myexit(pred);
                     pred = curr;
-                    if (less)
-                        curr = curr.left;
-                    else
+                    if (needInRight)
                         curr = curr.right;
+                    else
+                        curr = curr.left;
                     myenter(curr);
                 }
                 if (curr != null && curr.key.CompareTo(x) == 0)
@@ -228,15 +212,21 @@ namespace MyParallel
         {
             Console.Write('(');
             if (t == null)
-                Console.Write("null");
+                Console.Write("n");
             else
             {
-                Console.Write("d: ");
+                //Console.Write("d: ");
                 Console.Write(t.key);
-                Console.Write(", l: ");
-                print(t.left, false);
-                Console.Write(", r: ");
-                print(t.right, false);
+                if (t.left != null)
+                {
+                    Console.Write(", l: ");
+                    print(t.left, false);
+                }
+                if (t.right != null)
+                {
+                    Console.Write(", r: ");
+                    print(t.right, false);
+                }
             }
             Console.Write(')');
             if (en)
@@ -266,24 +256,34 @@ namespace MyParallel
         public SortedSet<T> ss = new SortedSet<T>();
         public void Add(T x)
         {
-            Monitor.Enter(ss);
+            WaitForThis();
             ss.Add(x);
-            Monitor.Exit(ss);
+            ReleaseThis();
         }
 
         public void Remove(T x)
         {
-            Monitor.Enter(ss);
+            WaitForThis();
             ss.Remove(x);
-            Monitor.Exit(ss);
+            ReleaseThis();
         }
 
         public bool Contains(T x)
         {
-            Monitor.Enter(ss);
+            WaitForThis();
             bool res = ss.Contains(x);
-            Monitor.Exit(ss);
+            ReleaseThis();
             return res;
+        }
+
+        private void WaitForThis()
+        {
+            Monitor.Enter(ss);
+        }
+
+        private void ReleaseThis()
+        {
+            Monitor.Exit(ss);
         }
     }
 }

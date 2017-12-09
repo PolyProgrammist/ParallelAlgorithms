@@ -37,7 +37,10 @@ namespace MyParallel
     {
         public RBTTester()
         {
-            rnd = new Random();
+            Random seed = new Random();
+            int t = seed.Next();
+            //Console.WriteLine("Seed = " + t);
+            rnd = new Random(t);
         }
 
         public RBTTester(int seed)
@@ -77,12 +80,11 @@ namespace MyParallel
 
         public Tuple<RBTComand, int>[] GetComands(int operations, int initialSize, double insertProbability, double eraseProbability, double findProbabity, int maxNum = Int32.MaxValue)
         {
-
             const double probEps = 1e-5;
             if (Math.Abs(insertProbability + eraseProbability + findProbabity - 1) > probEps)
                 throw new ArgumentException("Probabilities broken");
-            Console.WriteLine("Operations: " + operations);
-            Console.WriteLine("Initial size: " + initialSize);
+//            Console.WriteLine("Operations: " + operations);
+//            Console.WriteLine("Initial size: " + initialSize);
 
             Tuple<RBTComand, int>[] comands = new Tuple<RBTComand, int>[operations + initialSize];
             for (int i = 0; i < initialSize; i++)
@@ -100,18 +102,20 @@ namespace MyParallel
             return comands;
         }
 
-        public Tuple<RBTComand, int>[] GetSimpleComands(int operations = 10000)
+        public Tuple<RBTComand, int>[] GetSimpleComands(int operations = 10000, int maxnum = Int32.MaxValue)
         {
-            return GetComands(operations, operations / 10, 1.0 / 3, 1.0 / 3, 1.0 / 3);
+            return GetComands(operations, operations / 10, 1.0 / 3, 1.0 / 3, 1.0 / 3, maxnum = maxnum);
         }
 
         public void TestCorrectnessAuto()
         {
             BSTFineGrained<int> r = new BSTFineGrained<int>();
             SortedSet<int> s = new SortedSet<int>();
-            var comands = GetSimpleComands();
+            var comands = GetSimpleComands(1000000);
+            int number = -1;
             foreach (var cmd in comands)
             {
+                number++;
                 switch (cmd.Item1)
                 {
                     case RBTComand.INSERT:
@@ -226,17 +230,39 @@ namespace MyParallel
             Parallel.Invoke(()=>DoOperations(a, insertions), ()=>DoOperations(a, deletioins));
         }
 
-
-        public void TestTimeSync()
+        public void TestOnlyOneComandForEach()
         {
             int to = 500000;
-            var comands = GetSimpleComands(to);
-            var blocks = SplitToSublists(comands);
-            IUniqueContainer<int> a = new BSTFineGrained<int>();
-            IUniqueContainer<int> b = new ConcurrentBuiltInSetRough<int>();
+            int maxnum = (int)(1.5 * to);
+            var insertions = GetComands(to, 0, 1, 0, 0, maxnum);
+            var finds = GetComands(to, 0, 0, 0, 1, maxnum);
+            var deletions = GetComands(to, 0, 0, 1, 0, maxnum);
+            BSTFineGrained<int> a = new BSTFineGrained<int>();
+            ConcurrentBuiltInSetRough<int> b = new ConcurrentBuiltInSetRough<int>();
+            TestComandsWithTrees(insertions, a, b, "Only insertions");
+            TestComandsWithTrees(finds, a, b, "Only finds");
+            TestComandsWithTrees(deletions, a, b, "Only deletions");
+        }
+
+        public void TestComandsWithTrees(Tuple<RBTComand, int>[] comands,
+            BSTFineGrained<int> a, ConcurrentBuiltInSetRough<int> b, string testcase = "Some test case")
+        {
+            Console.WriteLine("[" + testcase + "]");
             Program.CountTime(() => Parallel.ForEach(comands, t => DoOperation(b, t)), "ConcurrentBuiltInSetRough");
             Program.CountTime(() => Parallel.ForEach(comands, t => DoOperation(a, t)), "BSTFineGrained");
             Program.CountTime(() => DoOperations(a, comands), "SecuentialBST");
+            Console.WriteLine();
+        }
+
+        public void TestComands(Tuple<RBTComand, int>[] comands, string testcase = "Some test case")
+        {
+            TestComandsWithTrees(comands, new BSTFineGrained<int>(), new ConcurrentBuiltInSetRough<int>(), testcase);
+        }
+
+
+        public void TestTimeSync()
+        {
+            TestComands(GetSimpleComands(500000), "All comands");
         }
     }
 }

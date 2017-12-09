@@ -12,22 +12,21 @@ namespace MyParallel
     {
         static void Main(string[] args)
         {
-            /*BSTFineGrained<int> t = new BSTFineGrained<int>();
-            t.Add(5);
-            t.Add(6);
-            t.Remove(5);
-            t.Remove(7);
-            t.print();//*/
-            //Monitor.Enter(null);
-            // Console.WriteLine(5.CompareTo(6));
-            // new RBTTester().TestTime();
-            //new RBTTester().TestCorrectnessManually();
-            //new RBTTester().TestCorrectnessAuto();
-            //new RBTTester().TestTimeSync();
-            new RBTTester().TestCorrectnessAuto();
-            new RBTTester().TestCorrectnessSync();
-            new RBTTester().TestAddEraseParallel();
+
+            BSTFineGrained<int> bst = new BSTFineGrained<int>();
+            bst.Add(2);
+            bst.Add(1);
+            bst.Add(3);
+            bst.Add(4);
+            bst.Remove(2);
+            bst.print();
+         //   new RBTTester().TestCorrectnessAuto();
+          //  new RBTTester().TestCorrectnessSync();
+//            new RBTTester().TestAddEraseParallel();
             new RBTTester().TestTimeSync();
+            new RBTTester().TestOnlyOneComandForEach();
+
+        //   new RBTTester().TestOnlyOneComandForEach();
             // new Qsort().Test();
             // new DirectoryHash().Test();
             // new CountPrimesTo().Test();
