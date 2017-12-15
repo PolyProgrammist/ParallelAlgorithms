@@ -286,4 +286,155 @@ namespace MyParallel
             Monitor.Exit(ss);
         }
     }
+
+
+    class BSTWithoutMutex<T> : IUniqueContainer<T> where T : IComparable<T>
+    {
+        private SNode<T> root;
+
+        public void Add(T x)
+        {
+            SNode<T> pred = null, curr = root;
+            if (root == null)
+            {
+                root = new SNode<T>(x);
+            }
+            else
+            {
+                    bool needInRight = false;
+                    while (curr != null && curr.key.CompareTo(x) != 0)
+                    {
+                        needInRight = curr.key.CompareTo(x) < 0;
+                        pred = curr;
+                        if (needInRight)
+                            curr = curr.right;
+                        else
+                            curr = curr.left;
+                    }
+                    if (curr == null)
+                        pred.assign(pred.key.CompareTo(x) < 0, new SNode<T>(x));
+            }
+        }
+
+        public void Remove(T x)
+        {
+            SNode<T> pred = null, curr = root;
+            if (root == null)
+            {
+                return;
+            }
+            else
+            {
+                    bool needInRight = false;
+                    while (curr != null && curr.key.CompareTo(x) != 0)
+                    {
+                        needInRight = curr.key.CompareTo(x) < 0;
+                        pred = curr;
+                        if (needInRight)
+                            curr = curr.right;
+                        else
+                            curr = curr.left;
+                    }
+                    if (curr == null)
+                        return;
+                    ;
+                    if (curr.left == null || curr.right == null)
+                        if (curr.right == null)
+                            if (pred == null)
+                                root = curr.left;
+                            else
+                                pred.assign(needInRight, curr.left);
+                        else
+                            if (pred == null)
+                            root = curr.right;
+                        else
+                            pred.assign(needInRight, curr.right);
+                    else
+                    {
+                        SNode<T> thepred = null, thecur = curr.right;
+                            while (thecur.left != null)
+                            {
+                                thepred = thecur;
+                                thecur = thecur.left;
+                            }
+                            curr.key = thecur.key;
+                            if (thepred == null)
+                                curr.right = thecur.right;
+                            else
+                                thepred.left = thecur.right;
+                            int a = 5;
+                    }
+
+            }
+        }
+
+        public bool Contains(T x)
+        {
+            bool was = false;
+            SNode<T> pred = null, curr = root;
+                bool needInRight = false;
+                while (curr != null && curr.key.CompareTo(x) != 0)
+                {
+                    needInRight = curr.key.CompareTo(x) < 0;
+                    pred = curr;
+                    if (needInRight)
+                        curr = curr.right;
+                    else
+                        curr = curr.left;
+                }
+                if (curr != null && curr.key.CompareTo(x) == 0)
+                    was = true;
+            return was;
+        }
+
+        private void assign(SNode<T> x, SNode<T> y)
+        {
+            if (x == null)
+                root = y;
+            else
+                x = y;
+        }
+
+        void print(SNode<T> t, bool en = true)
+        {
+            Console.Write('(');
+            if (t == null)
+                Console.Write("n");
+            else
+            {
+                //Console.Write("d: ");
+                Console.Write(t.key);
+                if (t.left != null)
+                {
+                    Console.Write(", l: ");
+                    print(t.left, false);
+                }
+                if (t.right != null)
+                {
+                    Console.Write(", r: ");
+                    print(t.right, false);
+                }
+            }
+            Console.Write(')');
+            if (en)
+                Console.WriteLine();
+        }
+
+        public void print()
+        {
+            print(root);
+        }
+
+        public int sizelineartime()
+        {
+            return badsize(root);
+        }
+
+        private int badsize(SNode<T> t)
+        {
+            if (t == null)
+                return 0;
+            return badsize(t.left) + 1 + badsize(t.right);
+        }
+    }
 }
