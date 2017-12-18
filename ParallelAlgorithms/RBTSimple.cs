@@ -1,13 +1,61 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MyParallel
+namespace ParallelAlgorithms
 {
-    public class RBTFineGrained<T> : IUniqueContainer<T> where T : IComparable
+    public enum nodeColor { BLACK, RED };
+
+    public class Node<T> where T: IComparable
     {
+        public Node<T> left, right, parent;
+        public nodeColor color;
+        public T data;
+
+        public Node()
+        {
+
+        }
+        public Node(T data, Node<T> NIL)
+        {
+            this.data = data;
+            this.left = NIL;
+            this.right = NIL;
+            this.parent = NIL;
+            this.color = nodeColor.RED;
+        }
+
+        public static Node<T> NIL = new Node<T>(NIL);
+
+        public Node(Node<T> NIL)
+        {
+            this.left = NIL;
+            this.right = NIL;
+            this.parent = NIL;
+            this.color = nodeColor.BLACK;
+        }
+
+        public void setL(Node<T> d, bool op)
+        {
+            if (op)
+                right = d;
+            else
+                left = d;
+        }
+
+        public void setR(Node<T> d, bool op)
+        {
+            if (op)
+                left = d;
+            else
+                right = d;
+        }
+
+        public Node<T> l(bool op) { return op ? right : left; }
+        public Node<T> r(bool op) { return op ? left : right; }
+    };
+
+    public class RBTSimple<T> : IUniqueContainer<T> where T:IComparable
+    {
+
         Node<T> root = Node<T>.NIL;
 
         void rotate(Node<T> x, bool b)
@@ -228,5 +276,5 @@ namespace MyParallel
             a = b;
             b = temp;
         }
-    }
+    } 
 }

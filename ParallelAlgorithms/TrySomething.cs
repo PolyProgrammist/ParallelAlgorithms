@@ -1,26 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace MyParallel
+namespace ParallelAlgorithms
 {
     class TrySomething
     {
         public void f()
         {
-            Task t = g();
-            //t.Wait();
+            Console.WriteLine("kek");
         }
 
-        private async static Task MainSync()
+        private static async Task MainSync()
         {
             await Task.Delay(10000);
         }
 
-        private async static Task g()
+        private static async Task G()
         {
             await MainSync();
             Console.WriteLine("hello");

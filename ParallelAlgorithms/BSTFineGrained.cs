@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyParallel
+namespace ParallelAlgorithms
 {
     public class SNode<T> where T : IComparable<T>
     {
@@ -33,6 +29,7 @@ namespace MyParallel
             }
         }
     }
+
     class BSTFineGrained<T> : IUniqueContainer<T> where T: IComparable<T>
     {
         private SNode<T> root;
@@ -110,10 +107,10 @@ namespace MyParallel
                             else
                                 pred.assign(needInRight, curr.left);
                         else
-                            if (pred == null)
-                                root = curr.right;
-                            else
-                                pred.assign(needInRight, curr.right);
+                        if (pred == null)
+                            root = curr.right;
+                        else
+                            pred.assign(needInRight, curr.right);
                     else
                     {
                         SNode<T> thepred = null, thecur = curr.right;
@@ -251,43 +248,6 @@ namespace MyParallel
         }
     }
 
-    class ConcurrentBuiltInSetRough<T> : IUniqueContainer<T> where T: IComparable<T>
-    {
-        public SortedSet<T> ss = new SortedSet<T>();
-        public void Add(T x)
-        {
-            WaitForThis();
-            ss.Add(x);
-            ReleaseThis();
-        }
-
-        public void Remove(T x)
-        {
-            WaitForThis();
-            ss.Remove(x);
-            ReleaseThis();
-        }
-
-        public bool Contains(T x)
-        {
-            WaitForThis();
-            bool res = ss.Contains(x);
-            ReleaseThis();
-            return res;
-        }
-
-        private void WaitForThis()
-        {
-            Monitor.Enter(ss);
-        }
-
-        private void ReleaseThis()
-        {
-            Monitor.Exit(ss);
-        }
-    }
-
-
     class BSTWithoutMutex<T> : IUniqueContainer<T> where T : IComparable<T>
     {
         private SNode<T> root;
@@ -301,18 +261,18 @@ namespace MyParallel
             }
             else
             {
-                    bool needInRight = false;
-                    while (curr != null && curr.key.CompareTo(x) != 0)
-                    {
-                        needInRight = curr.key.CompareTo(x) < 0;
-                        pred = curr;
-                        if (needInRight)
-                            curr = curr.right;
-                        else
-                            curr = curr.left;
-                    }
-                    if (curr == null)
-                        pred.assign(pred.key.CompareTo(x) < 0, new SNode<T>(x));
+                bool needInRight = false;
+                while (curr != null && curr.key.CompareTo(x) != 0)
+                {
+                    needInRight = curr.key.CompareTo(x) < 0;
+                    pred = curr;
+                    if (needInRight)
+                        curr = curr.right;
+                    else
+                        curr = curr.left;
+                }
+                if (curr == null)
+                    pred.assign(pred.key.CompareTo(x) < 0, new SNode<T>(x));
             }
         }
 
@@ -325,53 +285,6 @@ namespace MyParallel
             }
             else
             {
-                    bool needInRight = false;
-                    while (curr != null && curr.key.CompareTo(x) != 0)
-                    {
-                        needInRight = curr.key.CompareTo(x) < 0;
-                        pred = curr;
-                        if (needInRight)
-                            curr = curr.right;
-                        else
-                            curr = curr.left;
-                    }
-                    if (curr == null)
-                        return;
-                    ;
-                    if (curr.left == null || curr.right == null)
-                        if (curr.right == null)
-                            if (pred == null)
-                                root = curr.left;
-                            else
-                                pred.assign(needInRight, curr.left);
-                        else
-                            if (pred == null)
-                            root = curr.right;
-                        else
-                            pred.assign(needInRight, curr.right);
-                    else
-                    {
-                        SNode<T> thepred = null, thecur = curr.right;
-                            while (thecur.left != null)
-                            {
-                                thepred = thecur;
-                                thecur = thecur.left;
-                            }
-                            curr.key = thecur.key;
-                            if (thepred == null)
-                                curr.right = thecur.right;
-                            else
-                                thepred.left = thecur.right;
-                            int a = 5;
-                    }
-
-            }
-        }
-
-        public bool Contains(T x)
-        {
-            bool was = false;
-            SNode<T> pred = null, curr = root;
                 bool needInRight = false;
                 while (curr != null && curr.key.CompareTo(x) != 0)
                 {
@@ -382,8 +295,55 @@ namespace MyParallel
                     else
                         curr = curr.left;
                 }
-                if (curr != null && curr.key.CompareTo(x) == 0)
-                    was = true;
+                if (curr == null)
+                    return;
+                ;
+                if (curr.left == null || curr.right == null)
+                    if (curr.right == null)
+                        if (pred == null)
+                            root = curr.left;
+                        else
+                            pred.assign(needInRight, curr.left);
+                    else
+                    if (pred == null)
+                        root = curr.right;
+                    else
+                        pred.assign(needInRight, curr.right);
+                else
+                {
+                    SNode<T> thepred = null, thecur = curr.right;
+                    while (thecur.left != null)
+                    {
+                        thepred = thecur;
+                        thecur = thecur.left;
+                    }
+                    curr.key = thecur.key;
+                    if (thepred == null)
+                        curr.right = thecur.right;
+                    else
+                        thepred.left = thecur.right;
+                    int a = 5;
+                }
+
+            }
+        }
+
+        public bool Contains(T x)
+        {
+            bool was = false;
+            SNode<T> pred = null, curr = root;
+            bool needInRight = false;
+            while (curr != null && curr.key.CompareTo(x) != 0)
+            {
+                needInRight = curr.key.CompareTo(x) < 0;
+                pred = curr;
+                if (needInRight)
+                    curr = curr.right;
+                else
+                    curr = curr.left;
+            }
+            if (curr != null && curr.key.CompareTo(x) == 0)
+                was = true;
             return was;
         }
 
@@ -435,6 +395,42 @@ namespace MyParallel
             if (t == null)
                 return 0;
             return badsize(t.left) + 1 + badsize(t.right);
+        }
+    }
+
+    class ConcurrentBuiltInSetRough<T> : IUniqueContainer<T> where T: IComparable<T>
+    {
+        public SortedSet<T> ss = new SortedSet<T>();
+        public void Add(T x)
+        {
+            WaitForThis();
+            ss.Add(x);
+            ReleaseThis();
+        }
+
+        public void Remove(T x)
+        {
+            WaitForThis();
+            ss.Remove(x);
+            ReleaseThis();
+        }
+
+        public bool Contains(T x)
+        {
+            WaitForThis();
+            bool res = ss.Contains(x);
+            ReleaseThis();
+            return res;
+        }
+
+        private void WaitForThis()
+        {
+            Monitor.Enter(ss);
+        }
+
+        private void ReleaseThis()
+        {
+            Monitor.Exit(ss);
         }
     }
 }
