@@ -94,7 +94,7 @@ namespace ParallelAlgorithms
 
         public void Update(int i, T val)
         {
-            var f = new bool[registers.Length];
+            bool[] f = new bool[registers.Length];
             for (int j = 0; j < registers.Length; j++)
                 f[j] = !q[j, i];
             registers[i].snapshots = Scan(i, false);
@@ -106,7 +106,7 @@ namespace ParallelAlgorithms
         
         public void Print()
         {
-            for (var i = 0; i < registers.Length; i++)
+            for (int i = 0; i < registers.Length; i++)
             {
                 Console.WriteLine("\nLogs of register {0}:", i);
                 Console.WriteLine("({0}, [{1}], {2}, [{3}])", registers[i].val, string.Join(",", registers[i].p), 
@@ -126,8 +126,8 @@ namespace ParallelAlgorithms
         public static void Test()
         {
             var atomicSnapshots = new AtomicSnapshots<int>(2);
-            var rnd = new Random();
-            var tasks = new Task[2];
+            Random rnd = new Random();
+            Task[] tasks = new Task[2];
 
             for (var i = 0; i < 30; i++)
             {
