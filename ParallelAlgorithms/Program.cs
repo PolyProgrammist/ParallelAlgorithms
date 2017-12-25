@@ -8,8 +8,7 @@ namespace ParallelAlgorithms
     {
         public static void Main(string[] args)
         {
-            
-            new TrySomething( ).f();
+            AtomicSnapshots<int>.Test();
         }
 
         public static void CountTime(Action action, string name)
