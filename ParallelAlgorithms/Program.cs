@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace ParallelAlgorithms
@@ -9,6 +8,20 @@ namespace ParallelAlgorithms
         public static void Main(string[] args)
         {
             AtomicSnapshots<int>.Test();
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    Console.WriteLine("hello");
+                }
+            }
+        }
+
+        public static void Lol(int t)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                Console.WriteLine("hello");
+            }
         }
 
         public static void CountTime(Action action, string name)

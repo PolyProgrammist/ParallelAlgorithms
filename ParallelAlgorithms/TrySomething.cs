@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 
 namespace ParallelAlgorithms
 {
-    class TrySomething
+    internal class TrySomething
     {
-        public void f()
+        public void F()
         {
             Console.WriteLine("kek");
         }

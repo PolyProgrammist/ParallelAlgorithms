@@ -6,150 +6,179 @@ namespace ParallelAlgorithms
 {
     public class SNode<T> where T : IComparable<T>
     {
-        public T key;
-        public SNode<T> left = null, right = null;
-        public SNode (T _key)
+        public T Key;
+        public SNode<T> Left, Right;
+
+        public SNode(T key)
         {
-            key = _key;
+            Key = key;
         }
 
-        public SNode<T> child(bool needInRight)
+        public SNode<T> Child(bool needInRight)
         {
-            return needInRight ? left : right;
+            return needInRight ? Left : Right;
         }
-        public void assign(bool needInRight, SNode<T> sn)
+
+        public void Assign(bool needInRight, SNode<T> sn)
         {
             if (needInRight)
             {
-                right = sn;
+                Right = sn;
             }
             else
             {
-                left = sn;
+                Left = sn;
             }
         }
     }
 
-    class BSTFineGrained<T> : IUniqueContainer<T> where T: IComparable<T>
+    internal class BstFineGrained<T> : IUniqueContainer<T> where T : IComparable<T>
     {
-        private SNode<T> root;
+        private SNode<T> _root;
 
         public void Add(T x)
         {
-            SNode<T> pred = null, curr = root;
-            if (root == null)
+            SNode<T> pred = null, curr = _root;
+            if (_root == null)
             {
-                root = new SNode<T>(x);
+                _root = new SNode<T>(x);
             }
             else
             {
-                myenter(curr);
+                Myenter(curr);
                 try
                 {
                     bool needInRight = false;
-                    while (curr != null && curr.key.CompareTo(x) != 0)
+                    while (curr != null && curr.Key.CompareTo(x) != 0)
                     {
-                        needInRight = curr.key.CompareTo(x) < 0;
-                        myexit(pred);
+                        needInRight = curr.Key.CompareTo(x) < 0;
+                        Myexit(pred);
                         pred = curr;
                         if (needInRight)
-                            curr = curr.right;
+                        {
+                            curr = curr.Right;
+                        }
                         else
-                            curr = curr.left;
-                        myenter(curr);
+                        {
+                            curr = curr.Left;
+                        }
+                        Myenter(curr);
                     }
                     if (curr == null)
-                        pred.assign(pred.key.CompareTo(x) < 0, new SNode<T>(x));
+                    {
+                        pred.Assign(pred.Key.CompareTo(x) < 0, new SNode<T>(x));
+                    }
                 }
                 finally
                 {
-                    myexit(pred);
-                    myexit(curr);
+                    Myexit(pred);
+                    Myexit(curr);
                 }
             }
-            myexit(root);
+            Myexit(_root);
         }
 
         public void Remove(T x)
         {
-            SNode<T> pred = null, curr = root;
-            if (root == null)
+            SNode<T> pred = null, curr = _root;
+            if (_root == null)
             {
-                return;
             }
             else
             {
-                myenter(curr);
+                Myenter(curr);
                 try
                 {
                     bool needInRight = false;
-                    while (curr != null && curr.key.CompareTo(x) != 0)
+                    while (curr != null && curr.Key.CompareTo(x) != 0)
                     {
-                        needInRight = curr.key.CompareTo(x) < 0;
+                        needInRight = curr.Key.CompareTo(x) < 0;
                         if (pred != null)
-                            myexit(pred);
+                        {
+                            Myexit(pred);
+                        }
                         pred = curr;
                         if (needInRight)
-                            curr = curr.right;
+                        {
+                            curr = curr.Right;
+                        }
                         else
-                            curr = curr.left;
-                        myenter(curr);
+                        {
+                            curr = curr.Left;
+                        }
+                        Myenter(curr);
                     }
                     if (curr == null)
+                    {
                         return;
+                    }
                     ;
-                    myenter(curr.left);
-                    myenter(curr.right);
-                    if (curr.left == null || curr.right == null)
-                        if (curr.right == null)
+                    Myenter(curr.Left);
+                    Myenter(curr.Right);
+                    if (curr.Left == null || curr.Right == null)
+                    {
+                        if (curr.Right == null)
+                        {
                             if (pred == null)
-                                root = curr.left;
+                            {
+                                _root = curr.Left;
+                            }
                             else
-                                pred.assign(needInRight, curr.left);
+                            {
+                                pred.Assign(needInRight, curr.Left);
+                            }
+                        }
+                        else if (pred == null)
+                        {
+                            _root = curr.Right;
+                        }
                         else
-                        if (pred == null)
-                            root = curr.right;
-                        else
-                            pred.assign(needInRight, curr.right);
+                        {
+                            pred.Assign(needInRight, curr.Right);
+                        }
+                    }
                     else
                     {
-                        SNode<T> thepred = null, thecur = curr.right;
-                        myenter(thecur);
-                        myenter(thepred);
+                        SNode<T> thepred = null, thecur = curr.Right;
+                        Myenter(thecur);
+                        Myenter(thepred);
                         try
                         {
-                            while (thecur.left != null)
+                            while (thecur.Left != null)
                             {
-                                myexit(thepred);
+                                Myexit(thepred);
                                 thepred = thecur;
-                                thecur = thecur.left;
-                                myenter(thecur);
+                                thecur = thecur.Left;
+                                Myenter(thecur);
                             }
-                            curr.key = thecur.key;
+                            curr.Key = thecur.Key;
                             if (thepred == null)
-                                curr.right = thecur.right;
+                            {
+                                curr.Right = thecur.Right;
+                            }
                             else
-                                thepred.left = thecur.right;
+                            {
+                                thepred.Left = thecur.Right;
+                            }
                             int a = 5;
                         }
                         finally
                         {
-                            myexit(thepred);
-                            myexit(thecur);
+                            Myexit(thepred);
+                            Myexit(thecur);
                         }
                     }
-
                 }
                 finally
                 {
-                    myexit(pred);
-                    myexit(curr);
+                    Myexit(pred);
+                    Myexit(curr);
                     if (curr != null)
                     {
-                        myexit(curr.left);
-                        myexit(curr.right);
+                        Myexit(curr.Left);
+                        Myexit(curr.Right);
                     }
-                    myexit(root);
+                    Myexit(_root);
                 }
             }
         }
@@ -157,280 +186,344 @@ namespace ParallelAlgorithms
         public bool Contains(T x)
         {
             bool was = false;
-            SNode<T> pred = null, curr = root;
-            myenter(curr);
+            SNode<T> pred = null, curr = _root;
+            Myenter(curr);
             try
             {
                 bool needInRight = false;
-                while (curr != null && curr.key.CompareTo(x) != 0)
+                while (curr != null && curr.Key.CompareTo(x) != 0)
                 {
-                    needInRight = curr.key.CompareTo(x) < 0;
+                    needInRight = curr.Key.CompareTo(x) < 0;
                     if (pred != null)
-                        myexit(pred);
+                    {
+                        Myexit(pred);
+                    }
                     pred = curr;
                     if (needInRight)
-                        curr = curr.right;
+                    {
+                        curr = curr.Right;
+                    }
                     else
-                        curr = curr.left;
-                    myenter(curr);
+                    {
+                        curr = curr.Left;
+                    }
+                    Myenter(curr);
                 }
-                if (curr != null && curr.key.CompareTo(x) == 0)
+                if (curr != null && curr.Key.CompareTo(x) == 0)
+                {
                     was = true;
+                }
             }
             finally
             {
-                myexit(pred);
-                myexit(curr);
+                Myexit(pred);
+                Myexit(curr);
             }
             return was;
         }
 
-        private void myenter(SNode<T> x)
+        private void Myenter(SNode<T> x)
         {
             if (x != null)
+            {
                 Monitor.Enter(x);
+            }
         }
 
-        private void myexit(SNode<T> x)
+        private void Myexit(SNode<T> x)
         {
             if (x != null && Monitor.IsEntered(x))
+            {
                 Monitor.Exit(x);
+            }
         }
 
-        private void assign(SNode<T> x, SNode<T> y)
+        private void Assign(SNode<T> x, SNode<T> y)
         {
             if (x == null)
-                root = y;
+            {
+                _root = y;
+            }
             else
+            {
                 x = y;
+            }
         }
 
-        void print(SNode<T> t, bool en = true)
+        private void Print(SNode<T> t, bool en = true)
         {
             Console.Write('(');
             if (t == null)
+            {
                 Console.Write("n");
+            }
             else
             {
                 //Console.Write("d: ");
-                Console.Write(t.key);
-                if (t.left != null)
+                Console.Write(t.Key);
+                if (t.Left != null)
                 {
                     Console.Write(", l: ");
-                    print(t.left, false);
+                    Print(t.Left, false);
                 }
-                if (t.right != null)
+                if (t.Right != null)
                 {
                     Console.Write(", r: ");
-                    print(t.right, false);
+                    Print(t.Right, false);
                 }
             }
             Console.Write(')');
             if (en)
+            {
                 Console.WriteLine();
+            }
         }
 
-        public void print()
+        public void Print()
         {
-            print(root);
+            Print(_root);
         }
 
-        public int sizelineartime()
+        public int Sizelineartime()
         {
-            return badsize(root);
+            return Badsize(_root);
         }
 
-        private int badsize(SNode<T> t)
+        private int Badsize(SNode<T> t)
         {
             if (t == null)
+            {
                 return 0;
-            return badsize(t.left) + 1 + badsize(t.right);
+            }
+            return Badsize(t.Left) + 1 + Badsize(t.Right);
         }
     }
 
-    class BSTWithoutMutex<T> : IUniqueContainer<T> where T : IComparable<T>
+    internal class BstWithoutMutex<T> : IUniqueContainer<T> where T : IComparable<T>
     {
-        private SNode<T> root;
+        private SNode<T> _root;
 
         public void Add(T x)
         {
-            SNode<T> pred = null, curr = root;
-            if (root == null)
+            SNode<T> pred = null, curr = _root;
+            if (_root == null)
             {
-                root = new SNode<T>(x);
+                _root = new SNode<T>(x);
             }
             else
             {
                 bool needInRight = false;
-                while (curr != null && curr.key.CompareTo(x) != 0)
+                while (curr != null && curr.Key.CompareTo(x) != 0)
                 {
-                    needInRight = curr.key.CompareTo(x) < 0;
+                    needInRight = curr.Key.CompareTo(x) < 0;
                     pred = curr;
                     if (needInRight)
-                        curr = curr.right;
+                    {
+                        curr = curr.Right;
+                    }
                     else
-                        curr = curr.left;
+                    {
+                        curr = curr.Left;
+                    }
                 }
                 if (curr == null)
-                    pred.assign(pred.key.CompareTo(x) < 0, new SNode<T>(x));
+                {
+                    pred.Assign(pred.Key.CompareTo(x) < 0, new SNode<T>(x));
+                }
             }
         }
 
         public void Remove(T x)
         {
-            SNode<T> pred = null, curr = root;
-            if (root == null)
+            SNode<T> pred = null, curr = _root;
+            if (_root == null)
             {
-                return;
             }
             else
             {
                 bool needInRight = false;
-                while (curr != null && curr.key.CompareTo(x) != 0)
+                while (curr != null && curr.Key.CompareTo(x) != 0)
                 {
-                    needInRight = curr.key.CompareTo(x) < 0;
+                    needInRight = curr.Key.CompareTo(x) < 0;
                     pred = curr;
                     if (needInRight)
-                        curr = curr.right;
+                    {
+                        curr = curr.Right;
+                    }
                     else
-                        curr = curr.left;
+                    {
+                        curr = curr.Left;
+                    }
                 }
                 if (curr == null)
+                {
                     return;
+                }
                 ;
-                if (curr.left == null || curr.right == null)
-                    if (curr.right == null)
+                if (curr.Left == null || curr.Right == null)
+                {
+                    if (curr.Right == null)
+                    {
                         if (pred == null)
-                            root = curr.left;
+                        {
+                            _root = curr.Left;
+                        }
                         else
-                            pred.assign(needInRight, curr.left);
+                        {
+                            pred.Assign(needInRight, curr.Left);
+                        }
+                    }
+                    else if (pred == null)
+                    {
+                        _root = curr.Right;
+                    }
                     else
-                    if (pred == null)
-                        root = curr.right;
-                    else
-                        pred.assign(needInRight, curr.right);
+                    {
+                        pred.Assign(needInRight, curr.Right);
+                    }
+                }
                 else
                 {
-                    SNode<T> thepred = null, thecur = curr.right;
-                    while (thecur.left != null)
+                    SNode<T> thepred = null, thecur = curr.Right;
+                    while (thecur.Left != null)
                     {
                         thepred = thecur;
-                        thecur = thecur.left;
+                        thecur = thecur.Left;
                     }
-                    curr.key = thecur.key;
+                    curr.Key = thecur.Key;
                     if (thepred == null)
-                        curr.right = thecur.right;
+                    {
+                        curr.Right = thecur.Right;
+                    }
                     else
-                        thepred.left = thecur.right;
+                    {
+                        thepred.Left = thecur.Right;
+                    }
                     int a = 5;
                 }
-
             }
         }
 
         public bool Contains(T x)
         {
             bool was = false;
-            SNode<T> pred = null, curr = root;
+            SNode<T> pred = null, curr = _root;
             bool needInRight = false;
-            while (curr != null && curr.key.CompareTo(x) != 0)
+            while (curr != null && curr.Key.CompareTo(x) != 0)
             {
-                needInRight = curr.key.CompareTo(x) < 0;
+                needInRight = curr.Key.CompareTo(x) < 0;
                 pred = curr;
                 if (needInRight)
-                    curr = curr.right;
+                {
+                    curr = curr.Right;
+                }
                 else
-                    curr = curr.left;
+                {
+                    curr = curr.Left;
+                }
             }
-            if (curr != null && curr.key.CompareTo(x) == 0)
+            if (curr != null && curr.Key.CompareTo(x) == 0)
+            {
                 was = true;
+            }
             return was;
         }
 
-        private void assign(SNode<T> x, SNode<T> y)
+        private void Assign(SNode<T> x, SNode<T> y)
         {
             if (x == null)
-                root = y;
+            {
+                _root = y;
+            }
             else
+            {
                 x = y;
+            }
         }
 
-        void print(SNode<T> t, bool en = true)
+        private void Print(SNode<T> t, bool en = true)
         {
             Console.Write('(');
             if (t == null)
+            {
                 Console.Write("n");
+            }
             else
             {
                 //Console.Write("d: ");
-                Console.Write(t.key);
-                if (t.left != null)
+                Console.Write(t.Key);
+                if (t.Left != null)
                 {
                     Console.Write(", l: ");
-                    print(t.left, false);
+                    Print(t.Left, false);
                 }
-                if (t.right != null)
+                if (t.Right != null)
                 {
                     Console.Write(", r: ");
-                    print(t.right, false);
+                    Print(t.Right, false);
                 }
             }
             Console.Write(')');
             if (en)
+            {
                 Console.WriteLine();
+            }
         }
 
-        public void print()
+        public void Print()
         {
-            print(root);
+            Print(_root);
         }
 
-        public int sizelineartime()
+        public int Sizelineartime()
         {
-            return badsize(root);
+            return Badsize(_root);
         }
 
-        private int badsize(SNode<T> t)
+        private int Badsize(SNode<T> t)
         {
             if (t == null)
+            {
                 return 0;
-            return badsize(t.left) + 1 + badsize(t.right);
+            }
+            return Badsize(t.Left) + 1 + Badsize(t.Right);
         }
     }
 
-    class ConcurrentBuiltInSetRough<T> : IUniqueContainer<T> where T: IComparable<T>
+    internal class ConcurrentBuiltInSetRough<T> : IUniqueContainer<T> where T : IComparable<T>
     {
-        public SortedSet<T> ss = new SortedSet<T>();
+        public SortedSet<T> Ss = new SortedSet<T>();
+
         public void Add(T x)
         {
             WaitForThis();
-            ss.Add(x);
+            Ss.Add(x);
             ReleaseThis();
         }
 
         public void Remove(T x)
         {
             WaitForThis();
-            ss.Remove(x);
+            Ss.Remove(x);
             ReleaseThis();
         }
 
         public bool Contains(T x)
         {
             WaitForThis();
-            bool res = ss.Contains(x);
+            bool res = Ss.Contains(x);
             ReleaseThis();
             return res;
         }
 
         private void WaitForThis()
         {
-            Monitor.Enter(ss);
+            Monitor.Enter(Ss);
         }
 
         private void ReleaseThis()
         {
-            Monitor.Exit(ss);
+            Monitor.Exit(Ss);
         }
     }
 }

@@ -3,14 +3,10 @@ using System.Threading.Tasks;
 
 namespace ParallelAlgorithms
 {
-    class Qsort
+    internal class Qsort
     {
-        private const int tplen = 1;
-        private int arlen = 10000;
-
-        public Qsort()
-        {
-        }
+        private const int Tplen = 1;
+        private int _arlen = 10000;
 
         public int[] GenerateIntArray(int n)
         {
@@ -23,16 +19,16 @@ namespace ParallelAlgorithms
             return a;
         }
 
-        private void printArray(int[] a)
+        private void PrintArray(int[] a)
         {
-            foreach (var t in a)
+            foreach (int t in a)
             {
                 Console.Write(t + " ");
             }
             Console.WriteLine();
         }
 
-        void Swap<T>(ref T a, ref T b)
+        private void Swap<T>(ref T a, ref T b)
         {
             T temp = a;
             a = b;
@@ -45,27 +41,36 @@ namespace ParallelAlgorithms
             T pivot = a[m];
             int j = l;
             for (int i = l; i <= r; i++)
+            {
                 if (a[i].CompareTo(pivot) <= 0)
                 {
                     Swap(ref a[i], ref a[j]);
                     if (i == m)
+                    {
                         m = j;
+                    }
                     else if (j == m)
+                    {
                         m = i;
+                    }
                     j++;
                 }
+            }
             if (a[j - 1].CompareTo(a[m]) <= 0)
             {
                 Swap(ref a[j - 1], ref a[m]);
             }
             return j - 1;
         }
+
         public void QsortThreaded<T>(T[] a, int l, int r) where T : IComparable<T>
         {
             if (l >= r)
+            {
                 return;
-            var SOME_THIS_CONSTANT = 500;
-            if (r - l > SOME_THIS_CONSTANT)
+            }
+            int someThisConstant = 500;
+            if (r - l > someThisConstant)
             {
                 QsortSimple(a, l, r);
                 return;
@@ -83,32 +88,33 @@ namespace ParallelAlgorithms
         public void QsortSimple<T>(T[] a, int l, int r) where T : IComparable<T>
         {
             if (l >= r)
+            {
                 return;
+            }
             int i = Partition(a, l, r);
             QsortSimple(a, l, i - 1);
             QsortSimple(a, i + 1, r);
         }
 
-
-        delegate void SomeDelegate();
-
-        private void LaunchSomeSort(int[] A)
+        private void LaunchSomeSort(int[] a)
         {
-
         }
 
         public void Test(int len = 50000)
         {
-            arlen = len;
-            int[] A = GenerateIntArray(arlen);
-            Console.WriteLine("QsortArrayLen = " + A.Length);
+            _arlen = len;
+            int[] a = GenerateIntArray(_arlen);
+            Console.WriteLine("QsortArrayLen = " + a.Length);
 
-            int[] B;
+            int[] b;
 
-            B = (int[])A.Clone();
-            Program.CountTime(() => QsortSimple(B, 0, B.Length - 1), "Qsimple");
-            B = (int[])A.Clone();
-            Program.CountTime(() => QsortThreaded(B, 0, B.Length - 1), "Qthreaded");
+            b = (int[]) a.Clone();
+            Program.CountTime(() => QsortSimple(b, 0, b.Length - 1), "Qsimple");
+            b = (int[]) a.Clone();
+            Program.CountTime(() => QsortThreaded(b, 0, b.Length - 1), "Qthreaded");
         }
+
+
+        private delegate void SomeDelegate();
     }
 }

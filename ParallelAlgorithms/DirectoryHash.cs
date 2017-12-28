@@ -7,15 +7,16 @@ using System.Threading.Tasks;
 
 namespace ParallelAlgorithms
 {
-    class DirectoryHash
+    internal class DirectoryHash
     {
         public string JustFunc(string x)
         {
-            using (MD5 md5 = new MD5CryptoServiceProvider()) { 
+            using (MD5 md5 = new MD5CryptoServiceProvider())
+            {
                 byte[] hash = Encoding.ASCII.GetBytes(x);
                 byte[] hashenc = md5.ComputeHash(hash);
                 string result = "";
-                foreach (var b in hashenc)
+                foreach (byte b in hashenc)
                 {
                     result += b.ToString("x2");
                 }
@@ -33,11 +34,11 @@ namespace ParallelAlgorithms
                 files = Directory.GetFiles(root, "*", SearchOption.TopDirectoryOnly);
                 List<string> hashes = new List<string>(new string[dirs.Length + files.Length]);
                 Parallel.ForEach(Enumerable.Range(0, dirs.Length).ToList(),
-                    (index) => hashes[index] = GetHash(dirs[index]));
+                    index => hashes[index] = GetHash(dirs[index]));
 
                 Parallel.ForEach(Enumerable.Range(0, files.Length).ToList(),
-                    (index) => hashes[index + dirs.Length] = JustFunc(files[index]));
-                hashes.ForEach(h => sb.Append(h));                
+                    index => hashes[index + dirs.Length] = JustFunc(files[index]));
+                hashes.ForEach(h => sb.Append(h));
             }
             catch
             {
@@ -50,18 +51,17 @@ namespace ParallelAlgorithms
             StringBuilder sb = new StringBuilder();
             try
             {
-                foreach (var directory in Directory.GetDirectories(root, "*", SearchOption.TopDirectoryOnly))
+                foreach (string directory in Directory.GetDirectories(root, "*", SearchOption.TopDirectoryOnly))
                 {
                     sb.Append(GetHashSimple(directory));
                 }
-                foreach (var file in Directory.GetFiles(root, "*", SearchOption.TopDirectoryOnly))
+                foreach (string file in Directory.GetFiles(root, "*", SearchOption.TopDirectoryOnly))
                 {
                     sb.Append(JustFunc(file));
                 }
             }
             catch
             {
-
             }
             return JustFunc(sb + JustFunc(root));
         }

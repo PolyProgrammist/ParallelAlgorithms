@@ -2,225 +2,263 @@
 
 namespace ParallelAlgorithms
 {
-    public class RBTFineGrained<T> : IUniqueContainer<T> where T : IComparable
+    public class RbtFineGrained<T> : IUniqueContainer<T> where T : IComparable
     {
-        Node<T> root = Node<T>.NIL;
-
-        void rotate(Node<T> x, bool b)
-        {//b = right
-            Node<T> y = x.r(b);
-            x.setR(y.l(b), b);
-            if (x.r(b) != Node<T>.NIL)
-                x.r(b).parent = x;
-            y.parent = x.parent;
-            if (x.parent == Node<T>.NIL)
-                root = y;
-            x.parent.setR(y, b ^ (x.parent.l(b) == x));
-            y.setL(x, b);
-            x.parent = y;
-        }
-
-        void print(Node<T> t, bool en = true)
-        {
-            Console.Write('(');
-            if (t == Node<T>.NIL)
-                Console.Write("NIL");
-            else
-            {
-                Console.Write("d: ");
-                Console.Write(t.data);
-                Console.Write(", c: ");
-                Console.Write(t.color);
-                Console.Write(", l: ");
-                print(t.left, false);
-                Console.Write(", r: ");
-                print(t.right, false);
-            }
-            Console.Write(')');
-            if (en)
-                Console.WriteLine();
-        }
-
-        public void print()
-        {
-            print(root);
-        }
-
-        void insert_fixup(Node<T> z)
-        {
-            while (z.parent.color == nodeColor.RED)
-            {
-                bool b = z.parent != z.parent.parent.left;
-                Node<T> y = z.parent.parent.r(b); //uncle
-                if (y.color == nodeColor.RED)
-                {
-                    z.parent.color = nodeColor.BLACK;
-                    y.color = nodeColor.BLACK;
-                    z.parent.parent.color = nodeColor.RED;
-                    z = z.parent.parent;
-                }
-                else
-                {
-                    if (z == z.parent.r(b))
-                    {
-                        z = z.parent;
-                        rotate(z, b);
-                    }
-                    z.parent.color = nodeColor.BLACK;
-                    z.parent.parent.color = nodeColor.RED;
-                    rotate(z.parent.parent, !b);
-                }
-            }
-            root.color = nodeColor.BLACK;
-        }
-
-        void insert(Node<T> z)
-        {
-            Node<T> y = Node<T>.NIL, x = root;
-            while (x != Node<T>.NIL)
-            {
-                y = x;
-                x = x.r(z.data.CompareTo(x.data) < 0);
-            }
-            z.parent = y;
-            if (y == Node<T>.NIL)
-                root = z;
-            else
-                y.setR(z, z.data.CompareTo(y.data) < 0);
-            insert_fixup(z);
-        }
-
-        void transplant(Node<T> u, Node<T> v)
-        {
-            if (u.parent == Node<T>.NIL)
-                root = v;
-            else
-                u.parent.setR(v, u == u.parent.left);
-            v.parent = u.parent;
-        }
-
-        Node<T> treemin(Node<T> t)
-        {
-            while (t.left != Node<T>.NIL)
-                t = t.left;
-            return t;
-        }
-
-        void erase_fixup(Node<T> x)
-        {
-            while (x != root && x.color == nodeColor.BLACK)
-            {
-                bool b = x != x.parent.left;
-                Node<T> w = x.parent.r(b);
-                if (w.color == nodeColor.RED)
-                {
-                    Swap(ref w.color, ref x.parent.color);
-                    rotate(x.parent, b);
-                    w = x.parent.r(b);
-                }
-                if (w.l(b).color == nodeColor.BLACK && w.r(b).color == nodeColor.BLACK)
-                {
-                    w.color = nodeColor.RED;
-                    x = x.parent;
-                }
-                else
-                {
-                    if (w.r(b).color == nodeColor.BLACK)
-                    {
-                        Swap(ref w.l(b).color, ref w.color);
-                        rotate(w, !b);
-                        w = x.parent.r(b);
-                    }
-                    w.color = x.parent.color;
-                    x.parent.color = nodeColor.BLACK;
-                    w.r(b).color = nodeColor.BLACK;
-                    rotate(x.parent, b);
-                    x = root;
-                }
-            }
-            x.color = nodeColor.BLACK;
-        }
-
-        void erase(Node<T> z)
-        {
-            if (z == Node<T>.NIL)
-                return;
-            Node<T> y = z, x;
-            nodeColor origin_color = y.color;
-            if (z.left == Node<T>.NIL || z.right == Node<T>.NIL)
-            {
-                x = z.r(z.right == Node<T>.NIL);
-                transplant(z, z.r(z.right == Node<T>.NIL));
-            }
-            else
-            {
-                y = treemin(z.right);
-                origin_color = y.color;
-                x = y.right;
-                if (y.parent == z)
-                    x.parent = y;
-                else
-                {
-                    transplant(y, y.right);
-                    y.right = z.right;
-                    y.right.parent = y;
-                }
-                transplant(z, y);
-                y.left = z.left;
-                y.left.parent = y;
-                y.color = z.color;
-            }
-            if (origin_color == nodeColor.BLACK)
-                erase_fixup(x);
-        }
-
-        Node<T> treefind(Node<T> t, T x)
-        {
-            if (t == Node<T>.NIL || t.data.CompareTo(x) == 0)
-                return t;
-            return treefind(t.r(t.data.CompareTo(x) > 0), x);
-        }
-
-        int h(Node<T> t)
-        {
-            if (t == Node<T>.NIL)
-                return 0;
-            return Math.Max(h(t.left), h(t.right)) + 1;
-        }
-        int size(Node<T> t)
-        {
-            if (t == Node<T>.NIL)
-                return 0;
-            return size(t.left) + size(t.right) + 1;
-        }
+        private Node<T> _root = Node<T>.Nil;
 
 
         public void Add(T x)
         {
             if (Contains(x))
+            {
                 return;
-            insert(new Node<T>(x, Node<T>.NIL));
-        }
-        public void Remove(T x)
-        {
-            erase(treefind(root, x));
-        }
-        public bool Contains(T x)
-        {
-            return treefind(root, x) != Node<T>.NIL;
-        }
-        public int GetHeight()
-        {
-            return h(root);
-        }
-        public int GetSize()
-        {
-            return size(root);
+            }
+            Insert(new Node<T>(x, Node<T>.Nil));
         }
 
-        void Swap<E>(ref E a, ref E b)
+        public void Remove(T x)
         {
-            E temp = a;
+            Erase(Treefind(_root, x));
+        }
+
+        public bool Contains(T x)
+        {
+            return Treefind(_root, x) != Node<T>.Nil;
+        }
+
+        private void Rotate(Node<T> x, bool b)
+        {
+//b = right
+            Node<T> y = x.R(b);
+            x.SetR(y.L(b), b);
+            if (x.R(b) != Node<T>.Nil)
+            {
+                x.R(b).Parent = x;
+            }
+            y.Parent = x.Parent;
+            if (x.Parent == Node<T>.Nil)
+            {
+                _root = y;
+            }
+            x.Parent.SetR(y, b ^ (x.Parent.L(b) == x));
+            y.SetL(x, b);
+            x.Parent = y;
+        }
+
+        private void Print(Node<T> t, bool en = true)
+        {
+            Console.Write('(');
+            if (t == Node<T>.Nil)
+            {
+                Console.Write("NIL");
+            }
+            else
+            {
+                Console.Write("d: ");
+                Console.Write(t.Data);
+                Console.Write(", c: ");
+                Console.Write(t.Color);
+                Console.Write(", l: ");
+                Print(t.Left, false);
+                Console.Write(", r: ");
+                Print(t.Right, false);
+            }
+            Console.Write(')');
+            if (en)
+            {
+                Console.WriteLine();
+            }
+        }
+
+        public void Print()
+        {
+            Print(_root);
+        }
+
+        private void insert_fixup(Node<T> z)
+        {
+            while (z.Parent.Color == NodeColor.Red)
+            {
+                bool b = z.Parent != z.Parent.Parent.Left;
+                Node<T> y = z.Parent.Parent.R(b); //uncle
+                if (y.Color == NodeColor.Red)
+                {
+                    z.Parent.Color = NodeColor.Black;
+                    y.Color = NodeColor.Black;
+                    z.Parent.Parent.Color = NodeColor.Red;
+                    z = z.Parent.Parent;
+                }
+                else
+                {
+                    if (z == z.Parent.R(b))
+                    {
+                        z = z.Parent;
+                        Rotate(z, b);
+                    }
+                    z.Parent.Color = NodeColor.Black;
+                    z.Parent.Parent.Color = NodeColor.Red;
+                    Rotate(z.Parent.Parent, !b);
+                }
+            }
+            _root.Color = NodeColor.Black;
+        }
+
+        private void Insert(Node<T> z)
+        {
+            Node<T> y = Node<T>.Nil, x = _root;
+            while (x != Node<T>.Nil)
+            {
+                y = x;
+                x = x.R(z.Data.CompareTo(x.Data) < 0);
+            }
+            z.Parent = y;
+            if (y == Node<T>.Nil)
+            {
+                _root = z;
+            }
+            else
+            {
+                y.SetR(z, z.Data.CompareTo(y.Data) < 0);
+            }
+            insert_fixup(z);
+        }
+
+        private void Transplant(Node<T> u, Node<T> v)
+        {
+            if (u.Parent == Node<T>.Nil)
+            {
+                _root = v;
+            }
+            else
+            {
+                u.Parent.SetR(v, u == u.Parent.Left);
+            }
+            v.Parent = u.Parent;
+        }
+
+        private Node<T> Treemin(Node<T> t)
+        {
+            while (t.Left != Node<T>.Nil)
+            {
+                t = t.Left;
+            }
+            return t;
+        }
+
+        private void erase_fixup(Node<T> x)
+        {
+            while (x != _root && x.Color == NodeColor.Black)
+            {
+                bool b = x != x.Parent.Left;
+                Node<T> w = x.Parent.R(b);
+                if (w.Color == NodeColor.Red)
+                {
+                    Swap(ref w.Color, ref x.Parent.Color);
+                    Rotate(x.Parent, b);
+                    w = x.Parent.R(b);
+                }
+                if (w.L(b).Color == NodeColor.Black && w.R(b).Color == NodeColor.Black)
+                {
+                    w.Color = NodeColor.Red;
+                    x = x.Parent;
+                }
+                else
+                {
+                    if (w.R(b).Color == NodeColor.Black)
+                    {
+                        Swap(ref w.L(b).Color, ref w.Color);
+                        Rotate(w, !b);
+                        w = x.Parent.R(b);
+                    }
+                    w.Color = x.Parent.Color;
+                    x.Parent.Color = NodeColor.Black;
+                    w.R(b).Color = NodeColor.Black;
+                    Rotate(x.Parent, b);
+                    x = _root;
+                }
+            }
+            x.Color = NodeColor.Black;
+        }
+
+        private void Erase(Node<T> z)
+        {
+            if (z == Node<T>.Nil)
+            {
+                return;
+            }
+            Node<T> y = z, x;
+            NodeColor originColor = y.Color;
+            if (z.Left == Node<T>.Nil || z.Right == Node<T>.Nil)
+            {
+                x = z.R(z.Right == Node<T>.Nil);
+                Transplant(z, z.R(z.Right == Node<T>.Nil));
+            }
+            else
+            {
+                y = Treemin(z.Right);
+                originColor = y.Color;
+                x = y.Right;
+                if (y.Parent == z)
+                {
+                    x.Parent = y;
+                }
+                else
+                {
+                    Transplant(y, y.Right);
+                    y.Right = z.Right;
+                    y.Right.Parent = y;
+                }
+                Transplant(z, y);
+                y.Left = z.Left;
+                y.Left.Parent = y;
+                y.Color = z.Color;
+            }
+            if (originColor == NodeColor.Black)
+            {
+                erase_fixup(x);
+            }
+        }
+
+        private Node<T> Treefind(Node<T> t, T x)
+        {
+            if (t == Node<T>.Nil || t.Data.CompareTo(x) == 0)
+            {
+                return t;
+            }
+            return Treefind(t.R(t.Data.CompareTo(x) > 0), x);
+        }
+
+        private int H(Node<T> t)
+        {
+            if (t == Node<T>.Nil)
+            {
+                return 0;
+            }
+            return Math.Max(H(t.Left), H(t.Right)) + 1;
+        }
+
+        private int Size(Node<T> t)
+        {
+            if (t == Node<T>.Nil)
+            {
+                return 0;
+            }
+            return Size(t.Left) + Size(t.Right) + 1;
+        }
+
+        public int GetHeight()
+        {
+            return H(_root);
+        }
+
+        public int GetSize()
+        {
+            return Size(_root);
+        }
+
+        private void Swap<TE>(ref TE a, ref TE b)
+        {
+            TE temp = a;
             a = b;
             b = temp;
         }

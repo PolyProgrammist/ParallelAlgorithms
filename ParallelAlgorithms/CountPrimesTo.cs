@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 
 namespace ParallelAlgorithms
 {
-    class CountPrimesTo
+    internal class CountPrimesTo
     {
         public List<int> CountAsParallel(int to)
         {
             return
             (from n in Enumerable.Range(2, to).AsParallel()
-             where IsPrime(n)
-             select n).ToList();
+                where IsPrime(n)
+                select n).ToList();
         }
 
         public List<int> CountTask(int to)
@@ -22,11 +22,11 @@ namespace ParallelAlgorithms
             List<Task> tasks = new List<Task>(new Task[processes]);
             for (int i = 0; i < processes; i++)
             {
-                int start = (to / processes) * i + 1;
-                int stop = i == processes - 1 ? to : ((to) / processes * (i + 1));
+                int start = to / processes * i + 1;
+                int stop = i == processes - 1 ? to : to / processes * (i + 1);
                 tasks[i] = Task.Run(() => a.Add(CountSimple(stop, start)));
             }
-            tasks.ForEach((t) => t.Wait());
+            tasks.ForEach(t => t.Wait());
             return a.SelectMany(x => x).ToList();
         }
 
@@ -36,12 +36,12 @@ namespace ParallelAlgorithms
             List<Tuple<int, int>> ranges = new List<Tuple<int, int>>(processes);
             for (int i = 0; i < processes; i++)
             {
-                int start = (to / processes) * i + 1;
-                int stop = i == processes - 1 ? to : ((to) / processes * (i + 1));
+                int start = to / processes * i + 1;
+                int stop = i == processes - 1 ? to : to / processes * (i + 1);
                 ranges.Add(new Tuple<int, int>(start, stop));
             }
             List<List<int>> a = new List<List<int>>();
-            Parallel.ForEach(ranges, t=>a.Add(CountSimple(t.Item2, t.Item1)));
+            Parallel.ForEach(ranges, t => a.Add(CountSimple(t.Item2, t.Item1)));
             return a.SelectMany(x => x).ToList();
         }
 
@@ -49,11 +49,11 @@ namespace ParallelAlgorithms
         {
             return
             (from n in Enumerable.Range(fr, to - fr + 1)
-             where IsPrime(n)
-             select n).ToList();
+                where IsPrime(n)
+                select n).ToList();
         }
 
-        public void Test(int to = (int)5e6)
+        public void Test(int to = (int) 5e6)
         {
             Program.CountTime(() => CountSimple(to), "PrimesSimple");
             Program.CountTime(() => CountAsParallel(to), "PrimesAsParallel");
@@ -62,14 +62,20 @@ namespace ParallelAlgorithms
         }
 
 
-        bool IsPrime(int n)
+        private bool IsPrime(int n)
         {
             if (n < 2)
+            {
                 return false;
+            }
             int t = n;
             for (int i = 2; i * i <= n; i++)
+            {
                 while (t % i == 0)
+                {
                     return false;
+                }
+            }
             return true;
         }
     }

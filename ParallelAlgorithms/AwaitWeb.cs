@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace ParallelAlgorithms
 {
-    class AwaitWeb
+    internal class AwaitWeb
     {
-        private string pattern;
-        Regex reg;
+        private readonly SortedSet<string> _alreadyWas = new SortedSet<string>();
+        private readonly string _pattern;
+        private readonly Regex _reg;
 
         public AwaitWeb()
         {
@@ -20,15 +21,13 @@ namespace ParallelAlgorithms
 //            string d = @"^http(s) ?://([\w-]+.)+[\w-]+(/[\w- ./?%&=])?$";
 //            string e = @"<url>";
             string f = @"https://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?";
-            pattern = f;
-            reg = new Regex(pattern);
+            _pattern = f;
+            _reg = new Regex(_pattern);
         }
 
-        private SortedSet<string> alreadyWas = new SortedSet<string>();
-
-        public void rec(string address)
+        public void Rec(string address)
         {
-           // AsyncLen(address);
+            // AsyncLen(address);
             Task<bool> t = AsLen(address);
             t.Wait();
             Thread.Sleep(100000);
@@ -43,28 +42,31 @@ namespace ParallelAlgorithms
             }
             catch (Exception e)
             {
-                                Console.WriteLine("----------------");
+                Console.WriteLine("----------------");
                 Console.WriteLine(e.Message);
                 Console.WriteLine("bad: " + url);
-                Console.WriteLine("from: "+ from);
+                Console.WriteLine("from: " + from);
                 Console.WriteLine("--------------------");
-
             }
             if (page == null)
+            {
                 return false;
+            }
 
             Console.WriteLine(url + " - " + page.Length);
 
 
             if (level == 1)
+            {
                 return false;
-            MatchCollection mc = reg.Matches(page);
+            }
+            MatchCollection mc = _reg.Matches(page);
             foreach (Match m in mc)
             {
                 //Console.WriteLine("hello " + m.ToString() + " " + alreadyWas.Count);
-                if (!alreadyWas.Contains(m.ToString()))
+                if (!_alreadyWas.Contains(m.ToString()))
                 {
-                    alreadyWas.Add(m.ToString());
+                    _alreadyWas.Add(m.ToString());
                     AsLen(m.ToString(), level + 1, url);
                 }
             }

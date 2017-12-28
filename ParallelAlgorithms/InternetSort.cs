@@ -3,21 +3,20 @@ using System.Threading.Tasks;
 
 namespace ParallelAlgorithms
 {
-    class InternetSort
+    internal class InternetSort
     {
-        public void MyTest(int[] A)
+        public void MyTest(int[] a)
         {
-
         }
 
-        static void Swap<T>(ref T a, ref T b)
+        private static void Swap<T>(ref T a, ref T b)
         {
             T temp = a;
             a = b;
             b = temp;
         }
 
-        static int Partition<T>(T[] items, int left, int right) where T : IComparable<T>
+        private static int Partition<T>(T[] items, int left, int right) where T : IComparable<T>
         {
             int pivotPos = (left + right) / 2;
             T pivotValue = items[pivotPos];
@@ -49,12 +48,11 @@ namespace ParallelAlgorithms
         public static void QuicksortParallelOptimised<T>(T[] arr, int left, int right)
             where T : IComparable<T>
         {
-            const int SEQUENTIAL_THRESHOLD = 500;
+            const int sequentialThreshold = 500;
             if (right > left)
             {
-                if (right - left < SEQUENTIAL_THRESHOLD)
+                if (right - left < sequentialThreshold)
                 {
-
                     QuicksortSequential(arr, left, right);
                 }
                 else
