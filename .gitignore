@@ -1,3 +1,4 @@
 .idea*
 ParallelAlgorithms/[(bin)|(obj)]*
 extra*
+ParallelAlgorithms/TrySomething.cs
