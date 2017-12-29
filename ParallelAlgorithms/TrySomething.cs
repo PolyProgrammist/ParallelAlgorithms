@@ -21,4 +21,18 @@ namespace ParallelAlgorithms
             Console.WriteLine("hello");
         }
     }
+    public class RegisterMy<T>
+    {
+        private bool[] P;
+        public T[] Snapshots;
+        public bool Toggle;
+        public T Val;
+
+        public RegisterMy(int registerCount)
+        {
+            Toggle = false;
+            P = new bool[registerCount];
+            Snapshots = new T[registerCount];
+        }
+    }
 }

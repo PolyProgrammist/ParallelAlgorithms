@@ -7,10 +7,10 @@ namespace ParallelAlgorithms
 {
     public class Register<T>
     {
-        public bool[] P;
-        public T[] Snapshots;
-        public bool Toggle;
-        public T Val;
+        public bool[] P { get; set; }
+        public T[] Snapshots { get; set; }
+        public bool Toggle { get; set; }
+        public T Val { get; set; }
 
         public Register(int registerCount)
         {
@@ -143,7 +143,7 @@ namespace ParallelAlgorithms
             Random rnd = new Random();
             Task[] tasks = new Task[2];
 
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 10; i++)
             {
                 int id = i % 2;
                 int value = rnd.Next(100);
