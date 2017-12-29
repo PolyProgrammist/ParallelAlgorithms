@@ -23,10 +23,10 @@ namespace ParallelAlgorithms
     }
     public class RegisterMy<T>
     {
-        private bool[] P;
-        public T[] Snapshots;
-        public bool Toggle;
-        public T Val;
+        public bool[] P { get; set; }
+        public T[] Snapshots { get; set; }
+        public bool Toggle { get; set; }
+        public T Val { get; set; }
 
         public RegisterMy(int registerCount)
         {
